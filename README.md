@@ -1,4 +1,4 @@
-# Ghost
+# GhostExtended
 
 набор правил и свойств для создания отчётов по госту.
 
@@ -16,8 +16,8 @@ winget install typst
 cargo install typship
 
 # установка
-git clone https://github.com/mih4n/ghost
-cd ghost
+git clone https://github.com/gitLute/GhostExtended
+cd GhostExtended
 typship install mih4n
 
 # обновление

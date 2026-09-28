@@ -1,5 +1,5 @@
 [package]
 name = "ghost"
-version = "1.0.0"
+version = "1.0.1"
 entrypoint = "lib.typ"
-authors = ["Mih4n"]
+authors = ["Mih4n, gitLute"]

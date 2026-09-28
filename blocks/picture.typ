@@ -1,17 +1,47 @@
-#let picture(img, caption, part: none) = {
-  let c = counter("fig-" + part)
-  c.step()
-  
-  align(center)[
-    #set image(fit: "stretch")
-    #img
+// БЛОК РИСУНКА: монолитный (изображение и подпись никогда не разрываются
+// между страницами) и с автоматической нумерацией по ГОСТ 7.32:
+//   - в пределах раздела: «Рисунок 3.4» (номер раздела.порядковый номер);
+//     счётчик сбрасывается до 1 при переходе на новый раздел;
+//   - если в документе нет ни одного раздела — сквозная нумерация
+//     «Рисунок 1», «Рисунок 2», ...;
+//   - в приложении — по букве приложения: «Рисунок Б.1». Буква определяется
+//     АВТОМАТИЧЕСКИ: #appendix из styles/extended.typ публикует её в
+//     state("appendix"), поэтому параметр part передавать в приложении не
+//     нужно. Явный part остаётся как переопределение (имеет приоритет над
+//     автоматическим значением).
+// Сброс счётчиков выполняют styles/extended (при заголовке раздела —
+// уровень 1) и функция appendix (при начале приложения).
+// Структура важна: align(center) снаружи центрирует обе строки (изображение
+// и подпись), как в прежней версии; внутри — #block(breakable: false)
+// держит их неразрывными. Вызов #block пишется с явной решёткой: голый
+// `block(` на старте строки парсится line-start-правилом и даёт артефакт
+// «]» после подписи. Размещение block снаружи, а align внутри (прежний
+// вариант) приводило к потере центровки подписи.
+#let picture(img, caption, part: none) = context {
+  // Буква приложения: если part не передан, она берётся из state("appendix"),
+  // которую публикует #appendix (styles/extended.typ). Весь блок обёрнут в
+  // context, чтобы state.get() возвращал значение, а не контент.
+  let part = if part == none { state("appendix").get() } else { part }
 
-    #if part == none [
+  let c = counter(if part == none { "fig" } else { "fig-" + part })
+  c.step()
+
+  align(center)[
+    #block(breakable: false)[
+      #set image(fit: "stretch")
+      #img
       \
-      Рисунок #context c.display() -- #caption
-    ] else [
-      \
-      Рисунок  #part.#context c.display() -- #caption
+      #if part == none [
+        Рисунок #context {
+          let sec = counter("sec").get().first()
+          let n = counter("fig").get().first()
+          if sec > 0 { str(sec) + "." + str(n) } else { str(n) }
+        } -- #caption
+      ] else [
+        Рисунок #context {
+          part + "." + str(counter("fig-" + part).get().first())
+        } -- #caption
+      ]
     ]
   ]
 }
